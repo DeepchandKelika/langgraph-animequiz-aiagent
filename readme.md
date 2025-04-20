@@ -76,6 +76,17 @@ python main.py
 
 This will start the interactive quiz in your terminal.
 
+## Flow Diagram
+
+Below is the visual flow of the agent’s state graph:
+![Quiz Flow](Images/Graph.png)
+
+## Sample Run
+
+Here’s a screenshot of a sample run in the terminal:
+
+![Sample Run](Images/SampleRun.png)
+
 ## How it Works
 
 The application uses LangGraph to define the flow of the quiz as a state machine:
