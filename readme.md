@@ -4,14 +4,15 @@ A self-contained Anime Quote Trivia Agent built with LangGraph and Google Gemini
 
 ## Features
 
-*   Interactive quiz session in the terminal.
-*   Presents anime quotes one by one.
-*   Collects user guesses.
-*   Grades answers (potentially using LLM for fuzzy matching, depending on implementation in `handlers.py`).
-*   Offers hints upon request.
-*   Provides a final summary of correct/incorrect answers.
-*   Uses LangGraph to manage the conversation flow and state.
-*   Integrates with Google Gemini API (likely for grading or hint generation).
+* Interactive quiz session in the terminal.
+* Presents anime quotes one by one.
+* Collects user guesses.
+* Grades answers using Gemini (LLM-based fuzzy matching).
+* Offers AI-generated hints using RAG (Retrieval-Augmented Generation).
+* Character bios are stored in a vector DB using ChromaDB.
+* Gemini uses quote + character context to generate personalized hints.
+* Summarizes score at the end of the quiz.
+* Uses LangGraph to manage conversation flow and state like a state machine.
 
 ## Project Structure
 
@@ -23,6 +24,8 @@ Quiz_AIAgent_LangGraph/
 ├── requirements.txt      # Python dependencies
 ├── quizzes.py            # Contains the quiz questions, answers, and helper functions
 ├── state.py              # Defines the Pydantic model for the graph's state (`QuoteQuizState`)
+├── anime_docs.py         # Character bios for hint generation 
+├── vector_store.py       # Script to build Chroma vector store 
 ├── handlers.py           # Implements the logic for each node (step) in the quiz graph
 ├── graph.py              # Constructs the LangGraph StateGraph and defines node/edge connections
 └── main.py               # Entry point: Sets up environment, compiles the graph, and runs the quiz
