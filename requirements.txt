@@ -1,3 +1,5 @@
 langgraph
 google-genai
 pydantic
+sentence-transformers
+chromadb

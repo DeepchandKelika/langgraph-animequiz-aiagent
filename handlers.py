@@ -1,11 +1,22 @@
 from state import QuoteQuizState
 from google import genai
 import os
+import chromadb
+from chromadb.utils import embedding_functions
 from dotenv import load_dotenv
 
 load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GOOGLE_GENAI_API_KEY"))
+
+chroma_client = chromadb.PersistentClient(path="./anime_vector_db")
+embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+    model_name="BAAI/bge-small-en-v1.5"
+)
+collection = chroma_client.get_or_create_collection(
+    name="anime_bios",
+    embedding_function=embedding_fn
+)
 
 # Load the next quote (or default to exit)
 def get_next_fn(state: QuoteQuizState, **_) -> QuoteQuizState:
@@ -74,9 +85,34 @@ def grade_route_fn(state: QuoteQuizState, **_) -> str:
 
 # Show a hint (only once per quote)
 def hint_fn(state: QuoteQuizState, **_) -> QuoteQuizState:
-    if not state.hint_used:
-        state.hint_used = True
-        state.last_output = "💡 Hint: " + state.current.get("hint", "Think of their catchphrase.")
+    correct_name = state.current["answer"]
+    quote = state.current["quote"]
+
+    # RAG: Retrieve matching character bios
+    results = collection.query(
+        query_texts=[correct_name],
+        n_results=1
+    )
+
+    context_text = results["documents"][0][0] if results["documents"] else ""
+
+    # Compose prompt using quote + bio
+    prompt = (
+        f"Quote: \"{quote}\"\n"
+        f"Character: {correct_name}\n"
+        f"Context: {context_text}\n\n"
+        "Give a helpful but not obvious hint that would help a fan guess this character. "
+        "Do not mention the character name directly. Keep it under 2 lines."
+    )
+
+    response = client.models.generate_content(model="gemini-2.0-flash-001",
+        contents=prompt,
+        )
+    hint = response.text.strip()
+
+    # Update state with hint
+    state.last_output = f"💡 Hint: {hint}"
+    state.hint_used = True
     return state
 
 # Summarize at the end
